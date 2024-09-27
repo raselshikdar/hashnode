@@ -1,0 +1,37 @@
+name: Node.js CI
+
+on:
+  push:
+    branches:
+      - main  # Run the workflow when pushing to the main branch
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      # Add the authentication token to the environment
+      - name: Set up .npmrc
+        run: echo "//registry.tiptap.dev/:_authToken=${{ secrets.TIPTAP_AUTH_TOKEN }}" > ~/.npmrc
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Deploy to Vercel
+        run: |
+          npm i -g vercel
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
